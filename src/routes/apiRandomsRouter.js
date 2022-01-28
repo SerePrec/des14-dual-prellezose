@@ -5,4 +5,6 @@ const router = Router();
 
 router.get("/", controller.getRandoms);
 
+router.get("/wt", controller.getRandomsWT);
+
 export default router;
