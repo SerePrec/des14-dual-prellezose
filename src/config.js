@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== "production") {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const config = {
-  PORT: Number(argv.PORT) || 8080,
+  PORT: process.env.PORT || Number(argv.PORT) || 8080,
   fileSystemDb: {
     path: path.join(__dirname, "..", "DB"),
     messagesFile: "mensajes.json",

@@ -25,7 +25,7 @@ export const getRandoms = (req, res) => {
         const endTime = Date.now();
         !resWasSent &&
           res.json({
-            method: "fork - child process",
+            method: "Fork - Child process",
             elapsedTime: `${(endTime - startTime) / 1000} s`,
             numbers: msg
           });
