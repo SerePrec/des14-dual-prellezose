@@ -1,32 +1,46 @@
-# Desafío 13 - Programación Backend
+# Desafío 14 DUAL - Programación Backend
 
 ### CoderHouse
 
-## INICIO DE SESIÓN
+## USANDO EL OBJETO PROCESS. CHILD PROCESS Y WORKER THREADS.
 
-Retomemos nuestro trabajo para agregar inicio de sesión a nuestro sitio.
+Se agrega al desafío 14 la utilización de los **worker threads** como alternativa a los **child process**
 
-### Consigna
+## Consignas desafío 14
 
-Implementar sobre el entregable que venimos realizando un mecanismo de autenticación. Para ello:
+### Consigna 1
 
-Se incluirá una vista de registro, en donde se pidan email y contraseña. Estos datos se persistirán usando MongoDb, en una (nueva) colección de usuarios, cuidando que la contraseña quede encriptada (sugerencia: usar la librería bcrypt).
+Sobre el proyecto del último desafío entregable, mover todas las claves y credenciales utilizadas a un archivo .env, y cargarlo mediante la librería dotenv.
 
-Una vista de login, donde se pida email y contraseña, y que realice la autenticación del lado del servidor a través de una estrategia de passport local.
+La única configuración que no va a ser manejada con esta librería va a ser el puerto de escucha del servidor. Éste deberá ser leído de los argumento pasados por línea de comando, usando alguna librería (minimist o yargs). En el caso de no pasar este parámetro por línea de comandos, conectar por defecto al puerto 8080.
 
-Cada una de las vistas (logueo - registro) deberá tener un botón para ser redirigido a la otra.
+Observación: por el momento se puede dejar la elección de sesión y de persistencia explicitada en el código mismo. Más adelante haremos también parametrizable esta configuración.
 
-Una vez logueado el usuario, se lo redirigirá al inicio, el cual ahora mostrará también su email, y un botón para desolguearse.
+### Consigna 2
 
-Además, se activará un espacio de sesión controlado por la sesión de passport. Esta estará activa por 10 minutos y en cada acceso se recargará este tiempo.
+Agregar una ruta '/info' que presente en una vista sencilla los siguientes datos:
 
-Agregar también vistas de error para login (credenciales no válidas) y registro (usuario ya registrado).
+- Argumentos de entrada
+- Path de ejecución
+- Nombre de la plataforma (sistema operativo)
+- Process id
+- Versión de node.js
+- Carpeta del proyecto
+- Memoria total reservada (rss)
 
-El resto de la funciones, deben quedar tal cual estaban el proyecto original.
+### Consigna 3
+
+Agregar otra ruta '/api/randoms' que permita calcular un cantidad de números aleatorios en el rango del 1 al 1000 especificada por parámetros de consulta (query).  
+Por ej: /randoms?cant=20000.  
+Si dicho parámetro no se ingresa, calcular 100.000.000 números.
+
+El dato devuelto al frontend será un objeto que contendrá como claves los números random generados junto a la cantidad de veces que salió cada uno. Esta ruta no será bloqueante (utilizar el método fork de child process). Comprobar el no bloqueo con una cantidad de 500.000.000 de randoms.
+
+**Observación**: utilizar routers y apis separadas para esta funcionalidad.
 
 ### Deploy en Heroku (Temporal):
 
-https://des13-prellezose.herokuapp.com/
+https://des14-dual-prellezose.herokuapp.com/
 
 ### Ejecución
 
@@ -54,36 +68,33 @@ Estas vistas se encuentran en las rutas:
 
 - **/productos-mock** : es donde se muestra en una tabla el mock de productos devueltos por la llamada a la API en la ruta de test. Requiere autenticación
 
+- **/info**: muestra información relativa a la app
+
 ### API
 
 Consiste en las siguientes rutas:
 
 #### Router /api/productos
 
-| Método | Endpoint                | Descripción                                                        |
-| ------ | ----------------------- | ------------------------------------------------------------------ |
-| GET    | **/api/productos/**     | Me permite listar todos los productos disponibles                  |
-| POST   | **/api/productos/**     | Para incorporar productos al listado                               |
-| GET    | **/api/productos/:id**  | Me permite listar un producto por su id                            |
-| PUT    | **/api/productos/:id**  | Actualiza un producto por su id. Admite actualizaciones parciales  |
-| DELETE | **/api/productos/:id**  | Borra un producto por su id                                        |
-| GET    | **/api/productos-test** | Devuelve un listado de 5 productos mock generados con **Faker.js** |
+| Método | Endpoint                | Descripción                                                                                                                                                                                                                                               |
+| ------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | **/api/productos/**     | Me permite listar todos los productos disponibles                                                                                                                                                                                                         |
+| POST   | **/api/productos/**     | Para incorporar productos al listado                                                                                                                                                                                                                      |
+| GET    | **/api/productos/:id**  | Me permite listar un producto por su id                                                                                                                                                                                                                   |
+| PUT    | **/api/productos/:id**  | Actualiza un producto por su id. Admite actualizaciones parciales                                                                                                                                                                                         |
+| DELETE | **/api/productos/:id**  | Borra un producto por su id                                                                                                                                                                                                                               |
+| GET    | **/api/productos-test** | Devuelve un listado de 5 productos mock generados con **Faker.js**                                                                                                                                                                                        |
+| GET    | **/api/randoms**        | Devuelve una cantidad de números aleatorios en el rango del 1 al 1000 especificada por parámetros de consulta (query). Por ej: `/api/randoms?cant=20000`. Si dicho parámetro no se ingresa, calcula 100.000.000 de números. **Utiliza Child Process**     |
+| GET    | **/api/randoms/wt**     | Devuelve una cantidad de números aleatorios en el rango del 1 al 1000 especificada por parámetros de consulta (query). Por ej: `/api/randoms/wt?cant=20000`. Si dicho parámetro no se ingresa, calcula 100.000.000 de números. **Utiliza Worker Threads** |
 
 ### Detalles y comentarios
 
-Las sesiones del usuario se almacenan en **MongoDB** en la colección `sessions` utilizando el modulo `connect-mongo`.
+Hice una reestructuración del código utilizando los controladores de rutas, para ir ordenando más el proyecto. Ahora cada ruta llama a su controlador o función middleware respectivamente, separando esta lógica de las rutas.
 
-Se aplicaron estrategias de autenticación tanto al **login** como al **registro**, por lo que luego de completar con éxito cualquiera de ellos, ya se logra autenticar al usuario y redirigir a la vista principal.
+También separé las rutas de acuerdo a las funcionalidades: auth, webserver, apiProductos, apiRandoms y apiTests.
 
-En caso de estar logueado, evito poder acceder directamente a la vista de login o registro, redirigiendo a la vista principal para sugerir realizar el **logout** previo a ello.
+Se utilizó la librería **minimist** para procesar los argumentos de entrada, y las opciones de "alias" para el puerto y también de "default" para su valor en 8080 en caso de que no se introduzca uno.
 
-El formulario de registro incluye el ingreso de la contraseña por segunda vez, para su verificación.
+Para el `child process` y `worker thread` utilicé el método de **handshake** para iniciar el cálculo, dado a la naturaleza asíncrona de las importaciones **ESM** que utilizo. De éste modo evito que se envíen mensajes al subproceso antes de que este se encuentre inicializado. Por eso lo que primero hago con el subproceso, es mandar un mensaje que esta "ready", y ahí comenzar la comunicación desde el padre indicando que comience el cálculo.
 
-Aparte de las validaciones en el front previo a enviar los datos al servidor del formulario de registro, se produce una segunda validación del lado del servidor mediante un **middleware** `validateRegisterPost` a fin de asegurarse guardar en la BD los datos de manera correcta.
-
-Se pasan mensajes a través de la sesión activando la opción `failureMessage` y `successMessage` del método `authenticate` de passport. Luego en la vista destino se recibe dicha información y se procesa debidamente (reseteando el mensaje), para mostrar mensajes personalizados.  
-En un principio, use la funcionalidad incorporada de éste mismo método para setear esos mensajes usando el modulo `connect-flash` mediante las opciones `failureFlash` y `successFlash`. Pero noté que presentaba mayores problemas de carrera al usar **MongoDB Atlas** como “store” para las sesiones. Esto, por los tiempos asíncronos involucrados en las operaciones de escritura y posterior lectura al redirigir a la siguiente vista. Es más sencillo y prolijo su uso, pero decidí usar el pasaje por `req.session` y trabajar manualmente el reseteo de los mensajes luego de usarlos.
-
-Para almacenar el registro de usuarios, utilicé una clase extendida del `ContenedorMongoDB`, incorporando un método de búsqueda por "username" (en lugar de id). Esta da origen a la clase `UsersDaoMongoDB`.
-
-Tras autenticarse e ingresar a la pagina principal, el input de email del centro de mensajes, se completa con el email del usuario logueado y se evita su modificación.
+Incorporé al objeto devuelto por la api randoms el método utilizado (`method: Child process` o `method: Worker thread`) y el tiempo que se empleó en realizar el cálculo (`elapsedTime`).
